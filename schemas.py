@@ -1,8 +1,8 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 class userCreate(BaseModel): #builder for user creation
     email: EmailStr
-    password: str
+    password: str = Field(..., max_length=72)
 
 class userResponse(BaseModel): #builder for user response
     id: int
