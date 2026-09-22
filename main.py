@@ -3,17 +3,12 @@ from sqlalchemy.orm import Session
 import models
 import schemas
 import auth
-from database import SessionLocal, engine
+from database import SessionLocal, engine, get_db
 
 models.Base.metadata.create_all(bind=engine) #create the tables in the database
 app = FastAPI() #create a FastAPI app instance
 
-def get_db(): #create a dependency to get a database session
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+
 
 @app.post("/signup", response_model=schemas.userResponse) #endpoint for user signup
 def create_user(user: schemas.userCreate, db: Session = Depends(get_db)):
@@ -37,3 +32,8 @@ def login(user_credentials: schemas.userCreate, db: Session = Depends(get_db)):
 @app.get("/users/me", response_model=schemas.userResponse) #endpoint to get the current user
 def read_users_me(current_user: models.User = Depends(auth.get_current_user)):
     return current_user
+
+@app.get("/users/admin", response_model=schemas.userResponse) #endpoint to get the current admin user
+def read_all_users(db: Session = Depends(get_db), admin_user: models.User = Depends(auth.get_current_admin)):
+    users = db.query(models.User).all()
+    return users
